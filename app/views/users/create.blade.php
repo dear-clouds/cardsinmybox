@@ -10,8 +10,9 @@
 
 <h1>Register</h1>
 
-{{ HTML::ul($errors->all() )}}
-
+<div class="alert alert-danger alert-block"><button type="button" class="close" data-dismiss="alert">&times;</button>
+	{{ HTML::ul($errors->all() )}}
+</div>
 {{ Form::open(array('url' => 'user')) }}
 
 <div class="form-group">
