@@ -22,24 +22,5 @@
 
 <br><br>
 
-<h2>Ses Sorties</h2>
-
-
-@if ($sorties->count())
-
-<ul>
-		@foreach ($sorties as $sortie)
-		
-		<li><a href="../sortie/{{ $sortie->id }}">{{ $sortie->title }}</a></li>
-		
-		@endforeach
-		
-	</ul>
-
-{{ $sorties->links(); }}
-
-@else
-      Ce membre n'a posté aucune sortie.
-      @endif
 
 @stop

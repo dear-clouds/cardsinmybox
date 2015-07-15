@@ -22,7 +22,9 @@ class HomeController extends BaseController {
 
 	public function showIndex()
 	{
-		return View::make('index');
+		$registered = Online::registered()->get();
+		
+		return View::make('index')->with('registered', $registered);
 	}
 
 }

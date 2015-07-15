@@ -24,13 +24,14 @@ class UserController extends BaseController {
 		$rules = array(
 			'username'   => 'required|unique:users',
 			'email'      => 'required|email|unique:users',
-			'password'   => 'required|min:6'
+			'password'   => 'required|min:6',
+			'confirm_password' => 'required'
 			);
 		$validator = Validator::make(Input::all(), $rules);
 
 		if ($validator->fails()) 
 		{
-			return Redirect::to('user/create')
+			return Redirect::to('register')
 			->withErrors($validator)
 			->withInput(Input::except('password'));
 		} 
@@ -44,12 +45,15 @@ class UserController extends BaseController {
 			$user->email      	 = Input::get('email');
 			$user->code 		 = $code;
 
+			if (Input::get('confirm_password') !== Input::get('password')) {
+				return Redirect::to('register')->withErrors('Not the same password.');
+			}
+
 			if (Input::get('confirm_password') == Input::get('password')) {
 				$user->password 	 = Hash::make(Input::get('password'));
 				$user->save();
 			}
 			
-
 			if ($user)
 			{
 				Mail::send('emails.activate', array(
@@ -58,10 +62,6 @@ class UserController extends BaseController {
 					function($message) use ($user) {      
 					$message->to($user->email, $user->username)->subject('cards in my box :: Activation');
 				});
-			}
-
-			else  {
-				return Redirect::to('register')->with('error', 'Merci de bien vérifier tous les champs');
 			}
 
 			return Redirect::to('')->with('success', 'Vous êtes désormais inscrit. Veuillez activer votre compte par mail.');
@@ -95,14 +95,8 @@ class UserController extends BaseController {
 		$user = DB::table('users')
 		->where('username', $username)
 		->first();
-		// $uploadCount = Upload::where('user_id', '=', $id)->get();
 
-		$sorties = DB::table('sorties')
-		->where('username', $username)
-		->orderBy('created_at', 'desc')
-		->paginate(5);
-
-		return View::make('users.show', compact('sorties'))
+		return View::make('users.show')
 		->with('user', $user);
 	}
 	
@@ -127,8 +121,8 @@ class UserController extends BaseController {
 	public function update($id)
 	{
 		$rules = array(
-			'username'       => 'required',
-			'email'      => 'required|email'
+			'username'       	=> 'required',
+			'email'      		=> 'required|email'
 			);
 		$validator = Validator::make(Input::all(), $rules);
 
@@ -139,10 +133,36 @@ class UserController extends BaseController {
 		} else {
 
 			$user = User::find($id);
-			$user->username       = Input::get('username');
-			$user->email      = Input::get('email');
-			$user->birthdate = Input::get('birthdate');
+			$user->username       	= Input::get('username');
+			$user->email      		= Input::get('email');
+			$user->password      	= Input::get('password');
+			$user->birthdate 		= Input::get('birthdate');
+			$user->location 		= Input::get('location');
+			$user->bio 				= Input::get('bio');
+			$user->website 			= Input::get('website');
+			$user->twitter 			= Input::get('twitter');
+			$user->facebook 		= Input::get('facebook');
+			$user->instragram 		= Input::get('instragram');
 			$user->save();
+
+			$file = Input::file('file');
+			$destinationPath = 'public/images/avatars';
+			$filename = str_random(20);
+			$extension = $file->getClientOriginalExtension(); 
+			$type = $file->getMimeType();
+			$size = Input::file('file')->getSize();
+			$upload_success = Input::file('file')->move($destinationPath, $filename . '.' . $extension);
+
+			if( $upload_success ) {
+				Image::create(['name'       => $filename,
+					'user_id'    			=> Auth::user()->id,
+					'categorie'				=> 'avatars',
+					'url'        			=> 'images/avatars' . '/' . $filename . '.' . $extension,
+					'size'					=> $size,
+					'extension'   			=> $file->getClientOriginalExtension(),
+					'type'					=> $type
+					]);
+			}
 
 			return Redirect::to('')->with('success', 'Le profil a bien été modifié.');
 		}

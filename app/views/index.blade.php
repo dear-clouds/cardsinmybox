@@ -83,11 +83,18 @@
 </div>
 <div class="row">
 
-  
-    </div>
-    <div class="row">
-      <div class="col-md-12" id="footer">Footer</div>
-    </div>
+
+</div>
+<div class="row">
+  <div class="col-md-12" id="footer">
+ En ligne: 
+    @foreach ($registered as $online)
+
+    {{ $online->user->username }}
+
+    @endforeach
+  </div>
+</div>
 
 
-    @stop
+@stop

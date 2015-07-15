@@ -9,6 +9,11 @@
 | and give it the Closure to execute when that URI is requested.
 |
 */
+$guests = Online::guests()->get();
+$totalGuests = Online::guests()->count();
+$registered = Online::registered()->get();
+$totalRegistered = Online::registered()->count();
+
 Route::get('/', 'HomeController@showIndex');
 Route::get('login', array('as' => 'login', 'uses' => 'UserController@showLogin'));
 Route::post('login', 'UserController@postLogin');
@@ -20,9 +25,9 @@ Route::resource('user', 'UserController');
 Route::group(array('before' => 'auth'), function() 
 {
 	Route::resource('message', 'MessageController');
-	Route::resource('upload', 'UploadController');
-	Route::resource('sortie', 'SortieController');
-	Route::resource('screenshot', 'ScreenshotController');
+	Route::resource('image', 'ImageController');
+	Route::resource('club', 'ClubController');
+	Route::resource('edition', 'EditionController');
 	Route::get('profile', 'UserController@profile');
 	Route::get('profile/{username}', 'UserController@show');
 	Route::post(
