@@ -42,9 +42,13 @@ class UserController extends BaseController {
 			$user = new User;
 			$user->username      = Input::get('username');
 			$user->email      	 = Input::get('email');
-			$user->password 	 = Hash::make(Input::get('password'));
 			$user->code 		 = $code;
-			$user->save();
+
+			if (Input::get('confirm_password') == Input::get('password')) {
+				$user->password 	 = Hash::make(Input::get('password'));
+				$user->save();
+			}
+			
 
 			if ($user)
 			{
@@ -54,6 +58,10 @@ class UserController extends BaseController {
 					function($message) use ($user) {      
 					$message->to($user->email, $user->username)->subject('cards in my box :: Activation');
 				});
+			}
+
+			else  {
+				return Redirect::to('register')->with('error', 'Merci de bien vérifier tous les champs');
 			}
 
 			return Redirect::to('')->with('success', 'Vous êtes désormais inscrit. Veuillez activer votre compte par mail.');
