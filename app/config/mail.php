@@ -54,7 +54,7 @@ return array(
 	|
 	*/
 
-	'from' => array('address' => 'mio.bluewatermelon@gmail.com', 'name' => 'cards in my box'),
+	'from' => array('address' => 'bluewatermelon@free.fr', 'name' => 'cards in my box'),
 
 	/*
 	|--------------------------------------------------------------------------
