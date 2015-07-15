@@ -24,7 +24,7 @@ Route::group(array('before' => 'auth'), function()
 	Route::resource('sortie', 'SortieController');
 	Route::resource('screenshot', 'ScreenshotController');
 	Route::get('profile', 'UserController@profile');
-	Route::get('profil/{username}', 'UserController@show');
+	Route::get('profile/{username}', 'UserController@show');
 	Route::post(
     'annonce/search', 
     array(

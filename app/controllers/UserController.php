@@ -1,102 +1,117 @@
 <?php
+
 class UserController extends BaseController {
+
+
+	public function index()
+	{
+		$users = User::all();
+
+		return View::make('users.index')
+		->with('users', $users);
+	}
+
+
 	public function create()
 	{
 		return View::make('users.create');
 	}
+
+
 	public function store()
 	{
+
 		$rules = array(
 			'username'   => 'required|unique:users',
 			'email'      => 'required|email|unique:users',
-			'password'   => 'required|min:4'
+			'password'   => 'required|min:6'
 			);
 		$validator = Validator::make(Input::all(), $rules);
-		if ($validator->fails()) {
-			return Redirect::to('users/create')
+
+		if ($validator->fails()) 
+		{
+			return Redirect::to('user/create')
 			->withErrors($validator)
 			->withInput(Input::except('password'));
-		}
-		else
+		} 
+		else 
 		{
+
 			$code = str_random(60);
+
 			$user = new User;
 			$user->username      = Input::get('username');
 			$user->email      	 = Input::get('email');
-			
-			// $user->code 		 = $code;
-			// var_dump($user->password);
-			// var_dump(Hash::make(Input::get('confirm_password')));
-			// die;
-				echo "fail ?";
-				die;
-			if (Input::get('password') == Input::get('confirm_password'))
-			{
-				$user->password 	 = Hash::make(Input::get('password'));
-				$user->save();
-				// $userinfos = new UserInfo;
-				// $userinfos->civilite	 = Input::get('civilite');
-				// $userinfos->name 		 = Input::get('name');
-				// $userinfos->lastname 	 = Input::get('lastname');
-				// $userinfos->birthdate 	 = Input::get('birthdate');
-				// $userinfos->phone	 	 = Input::get('phone');
-				// $userinfos->address 	 = Input::get('address');
-				// $userinfos->zipcode 	 = Input::get('zipcode');
-				// $userinfos->city 	 	 = Input::get('city');
-				// $userinfos->country 	 = Input::get('country');
-				// $userinfos->addressname  = Input::get('addressname');
-				// $userinfos->user_id 	 = $user->id;
-				// $userinfos->save();
-			}
-			else
-			{
-				return Redirect::to('')->with('error', 'Les mots de passe ne correspondent pas.');
-			}
-			
+			$user->password 	 = Hash::make(Input::get('password'));
+			$user->code 		 = $code;
+			$user->save();
+
 			if ($user)
 			{
 				Mail::send('emails.activate', array(
 					'link' => URL::route('account-activate', $code), 
 					'username' => Input::get('username')), 
-				function($message) use ($user) {      
-					$message->to($user->email, $user->username)->subject('Activation');
+					function($message) use ($user) {      
+					$message->to($user->email, $user->username)->subject('cards in my box :: Activation');
 				});
 			}
-			return Redirect::to('')->with('success', 'Vous êtes désormais inscrit. Vous devez au préalable activer votre compte par mail.');
+
+			return Redirect::to('')->with('success', 'Vous êtes désormais inscrit. Veuillez activer votre compte par mail.');
 		}
 	}
+
+
 	public function getActivate($code)
 	{
 		$user = User::where('code', '=', $code)->where('active', '=', 0);
+
 		if ($user->count()) 
 		{
 			$user = $user->first();
+
 			$user->active = 1;
 			$user->code = '';
+
 			if ($user->save())
 			{
 				return Redirect::to('login')->with('success', 'Votre compte a été activé, vous pouvez désormais vous connecter.');
 			}
 		}
+
 		return Redirect::to('')->with('error', 'Votre compte n\'a pas pu être activé.');
 	}
-	public function show($id)
+
+
+	public function show($username)
+	{
+		$user = DB::table('users')
+		->where('username', $username)
+		->first();
+		// $uploadCount = Upload::where('user_id', '=', $id)->get();
+
+		$sorties = DB::table('sorties')
+		->where('username', $username)
+		->orderBy('created_at', 'desc')
+		->paginate(5);
+
+		return View::make('users.show', compact('sorties'))
+		->with('user', $user);
+	}
+	
+	public function edit($id)
 	{
 		$user = User::find($id);
-		return View::make('users.show')
+
+		return View::make('users.edit')
 		->with('user', $user);
 	}
 
 
-	public function edit()
+	public function profile()
 	{
 		$user = User::find(Auth::user()->id);
-		$products = DB::table('products')
-		->where('user_id', '=', Auth::user()->id)
-		->orderBy('created_at', 'desc')
-		->paginate(6);
 
-		return View::make('users.edit', compact('products'))
+		return View::make('users.profile')
 		->with('user', $user);
 	}
 
@@ -110,21 +125,18 @@ class UserController extends BaseController {
 		$validator = Validator::make(Input::all(), $rules);
 
 		if ($validator->fails()) {
-			return Redirect::to('users/' . $id . '/edit')
+			return Redirect::to('user/' . $id . '/edit')
 			->withErrors($validator)
 			->withInput(Input::except('password'));
 		} else {
 
-			$user = User::find(Auth::user()->id);
-			$user->username      = Input::get('username');
-			$user->email      	 = Input::get('email');
-			$user->name 		 = Input::get('name');
-			$user->lastname 	 = Input::get('lastname');
-			$user->birthdate 	 = Input::get('birthdate');
-			$user->password 	 = Hash::make(Input::get('password'));
+			$user = User::find($id);
+			$user->username       = Input::get('username');
+			$user->email      = Input::get('email');
+			$user->birthdate = Input::get('birthdate');
 			$user->save();
 
-			return Redirect::to('profile')->with('success', 'Votre profil a bien été modifié.');
+			return Redirect::to('')->with('success', 'Le profil a bien été modifié.');
 		}
 	}
 
@@ -189,6 +201,8 @@ class UserController extends BaseController {
         Auth::logout();
         return Redirect::to('')->with('info', 'Vous venez de vous déconnecter.');
     }
+    
+   
 
 
 
