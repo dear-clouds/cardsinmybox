@@ -1,6 +1,6 @@
 <?php
 
-class Product extends Eloquent {
+class Club extends Eloquent {
  
     protected $table = 'clubs';
     public $timestamps = true;
