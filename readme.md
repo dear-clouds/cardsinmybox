@@ -6,9 +6,9 @@ It's a community for people who like to collect or create cards. This idea comes
 
 ## Features
 
-- Users can create their cards editions
+- Users can create their own card editions
 - Users can limit the number of cards made
-- Users can organize their collection of cards
+- Users can organize their cards collection
 - Users can show their limited editions
 - More to come
 
